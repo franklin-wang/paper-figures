@@ -16,7 +16,7 @@ outdir = '/Users/zfwang2/Desktop/'#'/Users/zfwang2/Desktop/main_nfwdm_kinpa_myps
 
 ### no editing needed below here ###
 launcher_list = [launcher_name + job_name + str(x) for x in np.arange(0, num_jobs, 1)+1]
-cmd_list = ['#!/bin/bash', ' ']
+cmd_list = ['#!/bin/bash', '']
 for x in launcher_list:
     cmd_list.append('sbatch ' + grace_dir + x)
 
