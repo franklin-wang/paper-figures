@@ -1,8 +1,8 @@
 """
 Written by Frank Wang and Ben Jameson, July 12 2024
 This code should be run with wrapper codes that add the binning directory (NIFS_LP_binning) to $PATH,
-in the same way that dir_nifskin_py is added to $PATH.  Also, everything will be output to a single
-directory; we are changing the names of the logfiles. 
+in the same way that dir_nifskin_py is added to $PATH. Everything will be output to individual unique
+directories located within the same directory as the wrapper file.
 
 This code will create:
 1). folders titled snXthresY, where X = bin S/N and Y = threshold S/N. 
