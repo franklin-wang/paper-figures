@@ -9,8 +9,6 @@ This code will create:
     These folders should be placed within the binning code directory on Grace (NIFS_LP_binning)
 2). a jobs_ppxf file, which should be placed within the binning code directory on Grace (NIFS_LP_binning)
 3). a launcher_ppxf file, doesn't matter where this is placed, but I'd put it in the directory with the slurm files.
-
-The NIFS_LP_binning/python_codes directory should be specified in grace_dir
 """
 
 import numpy as np
@@ -21,19 +19,19 @@ master_wrapper_file = '/Users/zfwang2/Desktop/wrapper_findbinning_pgc12557_ben.p
 
 # bin S/N and thres_sn you want to test
 bin_sn = [40]#[40, 45, 50, 55]
-thres_sn = [4, 5, 6, 7, 8]
+thres_sn = [4, 5] #[6, 7, 8]
 
 # line numbers of the sample_binsn and sample_thressn lines
 # in the master wrapper file. count for these two numbers 
 # starts at 1.
-binsn_lineno = 195
-thressn_lineno = 196
-logfile_lineno = 578
+binsn_lineno = 192#195
+thressn_lineno = 193#196
+outdir_lineno = 65#67
 
 output_dir = '/Users/zfwang2/Desktop/'
 
 # grace_dir is the directory where your binning code is located
-grace_dir = '/scratch/user/bennoblej/data/NIFS_LP_binning/python_codes_nifs/'
+grace_dir = '/scratch/user/zfwang2/ben_test/bin_codes/'
 
 # launcher file parameters. These MUST all be strings, no numbers:
 job_name = 'binning_A'
@@ -43,7 +41,7 @@ job_ntasks_per_node = '20'
 job_memory = '7G'
 grace_acct_no = '132719841048'
 
-virtual_env_name = 'pPXF_env'
+virtual_env_name = 'ppxf_env'
 
 # no need to edit anything below this line #
 
@@ -62,6 +60,10 @@ for y in thres_sn:
         i = 0
         # loop through all lines in your 'master' wrapper file
         while i < len(master_lines):
+            # making an output directory for the binning scheme
+            if i == outdir_lineno-1:
+                new_file.append('    outdir_main ='+"'"+grace_dir+'sn'+str(x)+'_thressn'+str(y) + '/' + 'output/'+"'"+'\n')
+                i += 1
             # replace the 'sample_binsn' line with your desired bin S/N
             if i == binsn_lineno-1: # index of 'sample_binsn' line, you need to track down what this is.
                 new_file.append('sample_binsn = ['+str(x)+']\n')
@@ -70,24 +72,29 @@ for y in thres_sn:
             if i == thressn_lineno-1: # index of 'sample_thressn' line, you need to track down what this is.
                 new_file.append('sample_thressn = ['+str(y)+']\n')
                 i += 1
-            # replace the 'logfile.txt' line with your desired logfile name
-            if i == logfile_lineno-1: # index of 'logfile' line, you need to track down what this is.
-                new_file.append("test_logfile = glob.glob(outdir_main+'logfile_sn"+str(x)+"_cut"+str(y)+'.txt'"')\n")
-                i += 1
             else:
                 new_file.append(master_lines[i])
                 i += 1
 
-        os.mkdir(output_dir + 'sn' + str(x) + 'thres' + str(y))
-        new_dir = output_dir + 'sn' + str(x) + 'thres' + str(y) +'/'
+        os.mkdir(output_dir + 'sn' + str(x) + '_thressn'+ str(y))
+        os.mkdir(output_dir + 'sn' + str(x) + '_thressn'+ str(y) + '/output')
+        new_dir = output_dir + 'sn' + str(x) + '_thressn'+ str(y) +'/'
         # write the new wrapper file with your new bin S/N out.
         with open(new_dir + 'new_wrapper_binsn'+str(x)+'_thressn'+str(y)+'.py', 'w') as f:
             for line in new_file:
                 f.write(f"{line}")
 
+        # add execute permissions to wrapper file
+        st = os.stat(new_dir + 'new_wrapper_binsn'+str(x)+'_thressn'+str(y)+'.py')
+        os.chmod(new_dir + 'new_wrapper_binsn'+str(x)+'_thressn'+str(y)+'.py', st.st_mode | stat.S_IEXEC)
+        st = os.stat(new_dir + 'new_wrapper_binsn'+str(x)+'_thressn'+str(y)+'.py')
+        os.chmod(new_dir + 'new_wrapper_binsn'+str(x)+'_thressn'+str(y)+'.py', st.st_mode | stat.S_IXOTH)
+        st = os.stat(new_dir + 'new_wrapper_binsn'+str(x)+'_thressn'+str(y)+'.py')
+        os.chmod(new_dir + 'new_wrapper_binsn'+str(x)+'_thressn'+str(y)+'.py', st.st_mode | stat.S_IXGRP)
+        
         # creating command files
-        cmdlist = ['#!/bin/bash', 'cd ' + grace_dir + 'sn' + str(x) + 'thres' + str(y) +'/',
-                    'ml purge', 'ml Anaconda3/2021.11', 'ml intel/2020b', 'source activate ' + virtual_env_name, 'ml',
+        cmdlist = ['#!/bin/bash', 'cd ' + grace_dir + 'sn' + str(x) + '_thressn'+str(y) +'/',
+                    'ml purge', 'ml Anaconda3/5.3.0', 'ml intel/2020b', 'source activate ' + virtual_env_name, 'ml',
                     'python ' + 'new_wrapper_binsn'+str(x)+'_thressn'+str(y)+'.py']
         with open(new_dir + 'cmd_sn'+str(x)+'_thressn'+str(y), 'w') as f:
             for line in cmdlist:
