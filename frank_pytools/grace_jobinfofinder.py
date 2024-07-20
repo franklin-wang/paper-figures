@@ -47,8 +47,9 @@ from astropy.io import ascii
 from astropy.table import Table
 import os
 import stat
+import numpy as np
 
-SUlist_dir = '/Users/zfwang2/Desktop/SU_list.txt'
+SUlist_dir = '/Users/zfwang2/Desktop/SU_list2.txt'
 runinfo_dir = '/Users/zfwang2/Desktop/run_info.txt' # output from Grace
 output_dir = '/Users/zfwang2/Desktop/'
 
@@ -68,7 +69,7 @@ low = np.arange(0, 11*(len(su_data)-1), 11)
 high = np.arange(11, 11*(len(su_data))+11, 11)
 i = 0
 for x in su_data[1:]:
-    suct = x['col10']
+    suct = str(x['col10'])
     block = open(runinfo_dir).readlines()[low[i]:high[i]]
     block_clean = [x.strip('\n') for x in block]
 
@@ -88,5 +89,4 @@ for x in su_data[1:]:
     i += 1
 
 data_fin = data_fin[1:]
-data_fin.pprint_all()    
-    
+data_fin.pprint_all()   
